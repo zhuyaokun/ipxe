@@ -127,7 +127,7 @@ int uriboot ( struct uri *filename, struct uri **root_paths,
 	      const char *san_filename, unsigned int flags ) {
 	struct image *image;
 	int rc;
-
+#if 0 /* san_hook 需要放到后面否则多启动总是从第一项启动 */
 	/* Hook SAN device, if applicable */
 	if ( root_path_count ) {
 		drive = san_hook ( drive, root_paths, root_path_count,
@@ -150,7 +150,7 @@ int uriboot ( struct uri *filename, struct uri **root_paths,
 			goto err_san_describe;
 		}
 	}
-
+#endif
 	/* Allow a root-path-only boot with skip-san enabled to succeed */
 	rc = 0;
 
@@ -161,33 +161,72 @@ int uriboot ( struct uri *filename, struct uri **root_paths,
 		imgstat ( image );
 		image->flags |= IMAGE_AUTO_UNREGISTER;
 		if ( ( rc = image_exec ( image ) ) != 0 ) {
+#if 0
 			printf ( "Could not boot image: %s\n",
 				 strerror ( rc ) );
 			/* Fall through to (possibly) attempt a SAN boot
 			 * as a fallback.  If no SAN boot is attempted,
 			 * our status will become the return status.
 			 */
+#endif
 		} else {
 			/* Always print an extra newline, because we
 			 * don't know where the NBP may have left the
 			 * cursor.
 			 */
+#if 0
 			printf ( "\n" );
+#endif
+		}
+	}
+
+	/* Hook SAN device, if applicable */
+	if ( root_path_count ) {
+		drive = san_hook ( drive, root_paths, root_path_count,
+				   ( ( flags & URIBOOT_NO_SAN_DESCRIBE ) ?
+				     SAN_NO_DESCRIBE : 0 ) );
+		if ( drive < 0 ) {
+			rc = drive;
+#if 0
+			printf ( "Could not open SAN device: %s\n",
+				 strerror ( rc ) );
+#endif
+			goto err_san_hook;
+		}
+#if 0
+		printf ( "Registered SAN device %#02x\n", drive );
+#endif
+	}
+
+	/* Describe SAN device, if applicable */
+	if ( ! ( flags & URIBOOT_NO_SAN_DESCRIBE ) ) {
+		if ( ( rc = san_describe() ) != 0 ) {
+#if 0
+			printf ( "Could not describe SAN devices: %s\n",
+				 strerror ( rc ) );
+#endif
+			goto err_san_describe;
 		}
 	}
 
 	/* Attempt SAN boot if applicable */
 	if ( ! ( flags & URIBOOT_NO_SAN_BOOT ) ) {
 		if ( fetch_intz_setting ( NULL, &skip_san_boot_setting) == 0 ) {
+#if 0
 			printf ( "Booting%s%s from SAN device %#02x\n",
 				 ( san_filename ? " " : "" ),
 				 ( san_filename ? san_filename : "" ), drive );
+#endif
 			rc = san_boot ( drive, san_filename );
+#if 0
 			printf ( "Boot from SAN device %#02x failed: %s\n",
 				 drive, strerror ( rc ) );
+#endif
 		} else {
+#if 0
 			printf ( "Skipping boot from SAN device %#02x\n",
 				 drive );
+#endif
 			/* Avoid overwriting a possible failure status
 			 * from a filename boot.
 			 */
@@ -200,9 +239,13 @@ int uriboot ( struct uri *filename, struct uri **root_paths,
 	if ( ! ( flags & URIBOOT_NO_SAN_UNHOOK ) ) {
 		if ( fetch_intz_setting ( NULL, &keep_san_setting ) == 0 ) {
 			san_unhook ( drive );
+#if 0
 			printf ( "Unregistered SAN device %#02x\n", drive );
+#endif
 		} else {
+#if 0
 			printf ( "Preserving SAN device %#02x\n", drive );
+#endif
 		}
 	}
  err_san_hook:
@@ -259,16 +302,20 @@ struct uri * fetch_next_server_and_filename ( struct settings *settings ) {
 	/* Populate server address */
 	if ( next_server.sin.sin_addr.s_addr ) {
 		next_server.sin.sin_family = AF_INET;
+#if 0
 		printf ( "Next server: %s\n",
 			 inet_ntoa ( next_server.sin.sin_addr ) );
+#endif
 	}
 
 	/* Expand filename setting */
 	filename = expand_settings ( raw_filename );
 	if ( ! filename )
 		goto err_expand;
+#if 0
 	if ( filename[0] )
 		printf ( "Filename: %s\n", filename );
+#endif
 
 	/* Construct URI */
 	uri = pxe_uri ( &next_server.sa, filename );
@@ -293,6 +340,7 @@ static struct uri * fetch_root_path ( struct settings *settings ) {
 	struct uri *uri = NULL;
 	char *raw_root_path;
 	char *root_path;
+	char *pFindCCBoot = NULL;
 
 	/* Fetch root-path setting */
 	fetch_string_setting_copy ( settings, &root_path_setting,
@@ -304,13 +352,24 @@ static struct uri * fetch_root_path ( struct settings *settings ) {
 	root_path = expand_settings ( raw_root_path );
 	if ( ! root_path )
 		goto err_expand;
+#if 0
 	if ( root_path[0] )
 		printf ( "Root path: %s\n", root_path );
+#endif
 
 	/* Parse root path */
 	uri = parse_uri ( root_path );
 	if ( ! uri )
 		goto err_parse;
+	
+	// iscsi:%s::%d::%s:000
+	pFindCCBoot = strrchr(root_path, ':');
+	if(pFindCCBoot)
+	{
+		pFindCCBoot ++;
+		if(strlen(pFindCCBoot) != 3)
+			uri = NULL; // 新版本的ccboot的LUN是3位数
+	}
 
  err_parse:
 	free ( root_path );
@@ -340,8 +399,10 @@ static char * fetch_san_filename ( struct settings *settings ) {
 	san_filename = expand_settings ( raw_san_filename );
 	if ( ! san_filename )
 		goto err_expand;
+#if 0
 	if ( san_filename[0] )
 		printf ( "SAN filename: %s\n", san_filename );
+#endif
 
  err_expand:
 	free ( raw_san_filename );
@@ -402,7 +463,9 @@ int netboot ( struct net_device *netdev ) {
 
 	/* Try PXE menu boot, if applicable */
 	if ( have_pxe_menu() ) {
+#if 0
 		printf ( "Booting from PXE menu\n" );
+#endif
 		rc = pxe_menu_boot ( netdev );
 		goto err_pxe_menu_boot;
 	}
@@ -423,7 +486,9 @@ int netboot ( struct net_device *netdev ) {
 	if ( filename && root_path &&
 	     ( ( ! uri_is_absolute ( root_path ) ) ||
 	       ( xfer_uri_opener ( root_path->scheme ) == NULL ) ) ) {
+#if 0
 		printf ( "Ignoring unsupported root path\n" );
+#endif
 		uri_put ( root_path );
 		root_path = NULL;
 	}
@@ -431,7 +496,9 @@ int netboot ( struct net_device *netdev ) {
 	/* Check that we have something to boot */
 	if ( ! ( filename || root_path ) ) {
 		rc = -ENOENT_BOOT;
+#if 0
 		printf ( "Nothing to boot: %s\n", strerror ( rc ) );
+#endif
 		goto err_no_boot;
 	}
 
@@ -565,7 +632,9 @@ static int shell_banner ( void ) {
  * @ret rc		Return status code
  */
 int ipxe ( struct net_device *netdev ) {
+#if 0
 	struct feature *feature;
+#endif
 	struct image *image;
 	char *scriptlet;
 	int rc;
@@ -582,12 +651,14 @@ int ipxe ( struct net_device *netdev ) {
 	 * do so.
 	 *
 	 */
+#if 0
 	printf ( NORMAL "\n\n" PRODUCT_NAME "\n" BOLD PRODUCT_SHORT_NAME " %s"
 		 NORMAL " -- " PRODUCT_TAG_LINE " -- "
 		 CYAN PRODUCT_URI NORMAL "\nFeatures:", product_version );
 	for_each_table_entry ( feature, FEATURES )
 		printf ( " %s", feature->name );
 	printf ( "\n" );
+#endif
 
 	/* Boot system */
 	if ( ( image = first_image() ) != NULL ) {
