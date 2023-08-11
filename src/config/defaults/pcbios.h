@@ -51,5 +51,5 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 
 #define	REBOOT_CMD		/* Reboot command */
 #define	CPUID_CMD		/* x86 CPU feature detection command */
-
+#define	IMAGE_COMBOOT	// 只有pxe才支持图形化界面，uefi不支持vesamenu.c32
 #endif /* CONFIG_DEFAULTS_PCBIOS_H */
