@@ -529,8 +529,8 @@ static void iscsi_start_data_out ( struct iscsi_session *iscsi,
 	offset = datasn * 512;
 	remaining = iscsi->transfer_len - offset;
 	len = remaining;
-	if ( len > 512 )
-		len = 512;
+	if ( len > 65536 )
+		len = 65536;
 
 	/* Construct BHS and initiate transmission */
 	iscsi_start_tx ( iscsi );
@@ -735,7 +735,7 @@ static int iscsi_build_login_request_strings ( struct iscsi_session *iscsi,
 				    "MaxConnections=1%c"
 				    "InitialR2T=Yes%c"
 				    "ImmediateData=No%c"
-				    "MaxRecvDataSegmentLength=8192%c"
+				    "MaxRecvDataSegmentLength=65536%c"
 				    "MaxBurstLength=262144%c"
 				    "FirstBurstLength=65536%c"
 				    "DefaultTime2Wait=0%c"
