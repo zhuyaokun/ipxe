@@ -30,6 +30,10 @@
 #include <ipxe/uri.h>
 #include <ipxe/sanboot.h>
 #include <usr/autoboot.h>
+#if 1
+#include <ipxe/login_ui.h>
+#include <ipxe/settings.h>
+#endif
 
 FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 
@@ -133,6 +137,16 @@ static int sanboot_core_exec ( int argc, char **argv,
 	if ( ! count )
 		flags |= no_root_path_flags;
 
+#if 1
+	// support rename pc and multi-boot menu
+	if(login_ui() == 0)
+	{
+		char rootpath[256];
+		fetch_string_setting ( NULL, &root_path_setting, rootpath, sizeof ( rootpath ) );
+		uri_put ( uris[0] );
+		uris[0] = parse_uri ( rootpath );
+	}
+#endif
 	/* Boot from root path */
 	if ( ( rc = uriboot ( NULL, uris, count, opts.drive, opts.filename,
 			      flags ) ) != 0 )

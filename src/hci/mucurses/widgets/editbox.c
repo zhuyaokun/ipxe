@@ -88,7 +88,11 @@ void draw_editbox ( struct edit_box *box ) {
 	cursor_offset = ( box->string.cursor - first );
 
 	/* Construct underscore-padded string portion */
+#if 0
 	memset ( buf, '_', width );
+#else
+	memset ( buf, ' ', width );
+#endif
 	buf[width] = '\0';
 	len = ( strlen ( box->string.buf ) - first );
 	if ( len > width )
