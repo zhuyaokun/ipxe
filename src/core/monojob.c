@@ -62,6 +62,7 @@ struct interface monojob = INTF_INIT ( monojob_intf_desc );
  */
 static void monojob_clear ( size_t len ) {
 	unsigned int i;
+	return;
 
 	for ( i = 0 ; i < len ; i++ )
 		putchar ( '\b' );
@@ -94,8 +95,10 @@ int monojob_wait ( const char *string, unsigned long timeout ) {
 	int key;
 	int rc;
 
+#if 0
 	if ( string )
 		printf ( "%s...", string );
+#endif
 	monojob_rc = -EINPROGRESS;
 	last_check = last_progress = last_display = currticks();
 	while ( monojob_rc == -EINPROGRESS ) {
@@ -148,12 +151,16 @@ int monojob_wait ( const char *string, unsigned long timeout ) {
 					       scaled_total );
 				clear_len = printf ( "%3d%%", percentage );
 			} else {
+#if 0
 				printf ( "." );
+#endif
 				clear_len = 0;
 			}
 			if ( progress.message[0] ) {
+#if 0
 				clear_len += printf ( " [%s]",
 						      progress.message );
+#endif
 			}
 			last_display = now;
 		}
@@ -162,6 +169,7 @@ int monojob_wait ( const char *string, unsigned long timeout ) {
 	monojob_close ( &monojob, rc );
 
 	monojob_clear ( clear_len );
+#if 0
 	if ( string ) {
 		if ( rc ) {
 			printf ( " %s\n", strerror ( rc ) );
@@ -169,6 +177,7 @@ int monojob_wait ( const char *string, unsigned long timeout ) {
 			printf ( " ok\n" );
 		}
 	}
+#endif
 
 	return rc;
 }

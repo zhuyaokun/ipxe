@@ -99,6 +99,7 @@ progress_\@:
 	.code16
 	.globl	print_character
 print_character:
+	ret
 	/* Preserve registers */
 	pushw	%ax
 	pushw	%bx

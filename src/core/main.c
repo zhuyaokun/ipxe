@@ -28,13 +28,18 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 __asmcall int main ( void ) {
 	int rc;
 
+#define NORMAL	"\033[0m"
+#define BOLD	"\033[1m"
+#define CYAN	"\033[36m"
+	printf( CYAN BOLD "CCBoot" NORMAL " 2023-08-01 www.ccboot.com\n");
+
 	/* Perform one-time-only initialisation (e.g. heap) */
 	initialise();
 
 	/* Some devices take an unreasonably long time to initialise */
-	printf ( "%s initialising devices...", product_short_name );
+	//printf ( "%s initialising devices...", product_short_name );
 	startup();
-	printf ( "ok\n" );
+	//printf ( "ok\n" );
 
 	/* Attempt to boot */
 	if ( ( rc = ipxe ( NULL ) ) != 0 )

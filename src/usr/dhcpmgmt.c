@@ -42,7 +42,9 @@ int pxebs ( struct net_device *netdev, unsigned int pxe_type ) {
 	int rc;
 
 	/* Perform PXE Boot Server Discovery */
+#if 0
 	printf ( "PXEBS (%s type %d)", netdev->name, pxe_type );
+#endif
 	if ( ( rc = start_pxebs ( &monojob, netdev, pxe_type ) ) == 0 )
 		rc = monojob_wait ( "", 0 );
 

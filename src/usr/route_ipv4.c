@@ -41,7 +41,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
  */
 static void route_ipv4_print ( struct net_device *netdev ) {
 	struct ipv4_miniroute *miniroute;
-
+	return;
 	list_for_each_entry ( miniroute, &ipv4_miniroutes, list ) {
 		if ( miniroute->netdev != netdev )
 			continue;

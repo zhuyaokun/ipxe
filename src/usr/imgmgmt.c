@@ -155,6 +155,7 @@ int imgacquire ( const char *name_uri, unsigned long timeout,
  * @v image		Executable/loadable image
  */
 void imgstat ( struct image *image ) {
+	return;
 	printf ( "%s : %zd bytes", image->name, image->len );
 	if ( image->type )
 		printf ( " [%s]", image->type->name );

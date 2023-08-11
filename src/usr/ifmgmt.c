@@ -93,6 +93,8 @@ static void ifstat_errors ( struct net_device_stats *stats,
 			    const char *prefix ) {
 	unsigned int i;
 
+	return;
+
 	for ( i = 0 ; i < ( sizeof ( stats->errors ) /
 			    sizeof ( stats->errors[0] ) ) ; i++ ) {
 		if ( stats->errors[i].count )
@@ -108,6 +110,7 @@ static void ifstat_errors ( struct net_device_stats *stats,
  * @v netdev		Network device
  */
 void ifstat ( struct net_device *netdev ) {
+#if 0
 	printf ( "%s: %s using %s on %s (%s)\n"
 		 "  [Link:%s%s, TX:%d TXE:%d RX:%d RXE:%d]\n",
 		 netdev->name, netdev_addr ( netdev ),
@@ -117,9 +120,12 @@ void ifstat ( struct net_device *netdev ) {
 		 ( netdev_link_blocked ( netdev ) ? " (blocked)" : "" ),
 		 netdev->tx_stats.good, netdev->tx_stats.bad,
 		 netdev->rx_stats.good, netdev->rx_stats.bad );
+#endif
 	if ( ! netdev_link_ok ( netdev ) ) {
+#if 0
 		printf ( "  [Link status: %s]\n",
 			 strerror ( netdev->link_rc ) );
+#endif
 	}
 	ifstat_errors ( &netdev->tx_stats, "TXE" );
 	ifstat_errors ( &netdev->rx_stats, "RXE" );
@@ -226,7 +232,9 @@ int iflinkwait ( struct net_device *netdev, unsigned long timeout ) {
 		return 0;
 
 	/* Wait for link-up */
+#if 0
 	printf ( "Waiting for link-up on %s", netdev->name );
+#endif
 	return ifpoller_wait ( netdev, NULL, timeout, iflinkwait_progress );
 }
 
@@ -277,24 +285,30 @@ int ifconf ( struct net_device *netdev,
 	/* Start configuration */
 	if ( configurator ) {
 		if ( ( rc = netdev_configure ( netdev, configurator ) ) != 0 ) {
+#if 0
 			printf ( "Could not configure %s via %s: %s\n",
 				 netdev->name, configurator->name,
 				 strerror ( rc ) );
+#endif
 			return rc;
 		}
 	} else {
 		if ( ( rc = netdev_configure_all ( netdev ) ) != 0 ) {
+#if 0
 			printf ( "Could not configure %s: %s\n",
 				 netdev->name, strerror ( rc ) );
+#endif
 			return rc;
 		}
 	}
 
 	/* Wait for configuration to complete */
+#if 0
 	printf ( "Configuring %s%s%s(%s %s)",
 		 ( configurator ? "[" : "" ),
 		 ( configurator ? configurator->name : "" ),
 		 ( configurator ? "] " : "" ),
 		 netdev->name, netdev->ll_protocol->ntoa ( netdev->ll_addr ) );
+#endif
 	return ifpoller_wait ( netdev, configurator, 0, ifconf_progress );
 }
